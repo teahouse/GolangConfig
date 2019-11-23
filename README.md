@@ -6,12 +6,15 @@ golang读取配置，很多go配置都需要预定义结构体去读取，很不
 ## 用法
 LoadPathConfig(filepath)  
 # return map[string]string
+# 运行测试
+go run .\main.go .\LoadConfig.go .\test.config
 ## 测试配置
 // 单行注释
 /* 多行注释
     abc
     *b/
 */
+
 include("./test1.config");  //include作为关键字，包含另一个本地配置，路径为当前相对路径
 
 logpath = "log11"
