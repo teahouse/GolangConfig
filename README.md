@@ -18,13 +18,13 @@ logpath = "log11"
 
 logpath1 = 
 
-logger = loglevel + "/skynet.log"	// 引擎日志输出文件
+logger = loglevel + "/game.log"	// 引擎日志输出文件
 
 log_dailyrotate = true				// 是否按天切分日志
 
 loglevel = "debug"					// 日志级别: debug/trace/info/warn/fatal
 
-daemon = logpath + "/skynet.pid"
+daemon = logpath + "/game.pid"
 
 start = "app/main"					// 启动脚本
 
