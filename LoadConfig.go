@@ -251,14 +251,16 @@ func analysisConfig(inputFilePath string, keyvalMap map[string]string) {
 		}
 		if toval == "\n" || toval == ";" {
 			if len(oneLineCode) > 0 {
-				////fmt.Println("=====1============", oneLineCode)
+				//fmt.Println("=====1============", oneLineCode)
 				fileLineList = append(fileLineList, oneLineCode)
 			}
 			oneLineCode = ""
 		} else {
-			////fmt.Println("=====22============", oneLineCode)
 			oneLineCode += toval
 		}
+	}
+	if len(oneLineCode) > 0 {
+		fileLineList = append(fileLineList, oneLineCode)
 	}
 	//fmt.Printf(">>>>%#v\n", fileLineList)
 	paths, _ := filepath.Split(inputFilePath)
