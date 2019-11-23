@@ -11,7 +11,7 @@ LoadPathConfig(filepath)
     abc
     *b/
 */
-include("./test1.config");  //包含另一个本地配置，路径为当前相对路径
+include("./test1.config");  //include作为关键字，包含另一个本地配置，路径为当前相对路径
 
 logpath = "log11"
 
