@@ -14,14 +14,21 @@ LoadPathConfig(filepath)
 include("./test1.config");  //包含另一个本地配置，路径为当前相对路径
 
 logpath = "log11"
+
 logpath1 = 
+
 logger = loglevel + "/skynet.log"	// 引擎日志输出文件
+
 log_dailyrotate = true				// 是否按天切分日志
+
 loglevel = "debug"					// 日志级别: debug/trace/info/warn/fatal
+
 daemon = logpath + "/skynet.pid"
+
 start = "app/main"					// 启动脚本
 
 //多行字符串，字符串只能用双引号，不能用单引号
+
 start = "fabdd\   
 dd\"fd+sf\
 哈哈"  
