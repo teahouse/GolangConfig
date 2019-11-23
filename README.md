@@ -33,7 +33,7 @@ start = "app/main"					// 启动脚本
 
 //多行字符串，字符串只能用双引号，不能用单引号
 
-start = "fabdd\   
+start = "fabdd\
 dd\"fd+sf\
 哈哈"  
 
