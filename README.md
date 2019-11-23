@@ -1,0 +1,2 @@
+# GolangConfig
+golang config
