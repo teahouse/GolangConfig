@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// 对一行配置进行解析，只有include或者key=value格式
 func lcheckOneline(line string) (command string, targetval string) {
 	index1 := strings.Index(line, "include")
 	index2 := strings.Index(line, "=")
@@ -59,6 +60,8 @@ func lcheckOneline(line string) (command string, targetval string) {
 	}
 	return
 }
+
+// 从key-value的Map里面获取对应的值
 func lgetValueFromMap(keyvalMap map[string]string, tokey string, targetval string) string {
 	val, ok := keyvalMap[tokey]
 	if !ok {
@@ -70,214 +73,217 @@ func lgetValueFromMap(keyvalMap map[string]string, tokey string, targetval strin
 	}
 	return val
 }
+
+// 检测每个key-value的value值里面的替换关系
 func lcheckValueReplace(keyvalMap map[string]string, targetval string) string {
 	if len(targetval) <= 1 {
 		return targetval
 	}
-	var realvalstr string = ""
-	//allvaluelist := strings.Split(targetval, "+")
-	allvaluelist := []string{}
-	var issssstr bool = false
-	var preissssstr bool = false
-	var fsssstr string = ""
+	//valSplitList := strings.Split(targetval, "+")
+	valSplitList := []string{}
+	var isNumLine bool = false
+	var preisNumLine bool = false
+	var NumLineVal string = ""
 
 	var targetvalEx string = ""
-	var togval string = ""
+	var toSubStr string = ""
 	for _, val := range targetval {
 		toval := fmt.Sprintf("%c", val)
 		targetvalEx += toval
 		forstrlen := len(targetvalEx)
-		laststr := ""
+		lastTwoChar := ""
 		if forstrlen > 1 {
-			laststr = targetvalEx[forstrlen-2 : forstrlen]
+			lastTwoChar = targetvalEx[forstrlen-2 : forstrlen]
 		}
 		for {
-			if issssstr {
-				if laststr != "\\\"" && toval == "\"" {
-					issssstr = false
-					preissssstr = true
+			if isNumLine {
+				if lastTwoChar != "\\\"" && toval == "\"" {
+					isNumLine = false
+					preisNumLine = true
 					break
 				}
-				fsssstr += toval
+				NumLineVal += toval
 			}
 			if toval == "\"" {
-				issssstr = true
-				fsssstr = ""
+				isNumLine = true
+				NumLineVal = ""
 				break
 			}
 			break
 		}
-		if preissssstr {
-			allvaluelist = append(allvaluelist, "\""+fsssstr+"\"")
+		if preisNumLine {
+			valSplitList = append(valSplitList, "\""+NumLineVal+"\"")
 			continue
 		}
 		if toval == "+" {
-			if len(togval) > 0 {
-				allvaluelist = append(allvaluelist, togval)
+			if len(toSubStr) > 0 {
+				valSplitList = append(valSplitList, toSubStr)
 			}
 		} else {
-			togval += toval
+			toSubStr += toval
 		}
 	}
-	//fmt.Println("+++++++++++", allvaluelist)
-	if len(allvaluelist) <= 0 {
-		allvaluelist = append(allvaluelist, targetval)
+	////fmt.Println("+++++++++++", valSplitList)
+	if len(valSplitList) <= 0 {
+		valSplitList = append(valSplitList, targetval)
 	}
-	for index := 0; index < len(allvaluelist); index++ {
-		val := allvaluelist[index]
-		//fmt.Println("========2222222222222==11==", val)
+	var realvalstr string = ""
+	for index := 0; index < len(valSplitList); index++ {
+		val := valSplitList[index]
+		////fmt.Println("========2222222222222==11==", val)
 		if val[0:1] == "\"" {
 			val = val[1 : len(val)-1]
 		} else if val != "true" && val != "false" {
 			val = lgetValueFromMap(keyvalMap, val, targetval)
 		}
-		//fmt.Println("========2222222222222==22==", val)
+		////fmt.Println("========2222222222222==22==", val)
 		realvalstr += val
 	}
 	return realvalstr
 }
 
-func analysisConfig(ffpath string, keyvalMap map[string]string) {
-	fmt.Println("=====analysisConfig===222=====", ffpath)
-	f, err := os.Open(ffpath)
+func analysisConfig(inputFilePath string, keyvalMap map[string]string) {
+	//fmt.Println("=====analysisConfig===222=====", inputFilePath)
+	f, err := os.Open(inputFilePath)
 	if err != nil {
-		fmt.Println("Open error: ", err)
+		fmt.Printf("Open error: %v", err)
 		os.Exit(5)
 		return
 	}
 	defer f.Close()
 	buffer, err := ioutil.ReadAll(f)
 	if err != nil {
-		fmt.Println("ReadAll error: ", err)
+		fmt.Printf("ReadAll error: %v", err)
 		os.Exit(5)
 		return
 	}
-	filedata := fmt.Sprintf("%s", buffer)
-	filedataEx := []string{}
-	var forstr string = ""
-	var forstrEx string = ""
-	var islinezs bool = false
-	var isnumlinezs bool = false
+	filedataStr := fmt.Sprintf("%s", buffer)
+	fileLineList := []string{}
+	var extendFileStr string = ""
+	var oneLineCode string = ""
+	var isNoteOneLine bool = false
+	var isNoteNumLine bool = false
 
-	var issssstr bool = false
-	//var preissssstr bool = false
-	var issscont bool = false
-	var fsssstr string = ""
-	for i, val := range filedata {
+	var isNumLine bool = false
+	//var preisNumLine bool = false
+	var isLineJump bool = false
+	var NumLineVal string = ""
+	for i, val := range filedataStr {
 		toval := fmt.Sprintf("%c", val) + ""
-		forstr += toval
-		forstrlen := len(forstr)
+		extendFileStr += toval
+		forstrlen := len(extendFileStr)
 		if forstrlen <= 1 {
 			continue
 		}
-		laststr := forstr[forstrlen-2 : forstrlen]
-		if isnumlinezs {
-			if laststr == "*/" {
-				isnumlinezs = false
+		lastTwoChar := extendFileStr[forstrlen-2 : forstrlen]
+		if isNoteNumLine {
+			if lastTwoChar == "*/" {
+				isNoteNumLine = false
 			}
 			continue
-		} else if laststr == "*/" {
+		} else if lastTwoChar == "*/" {
 			fmt.Printf("error: unknow */ in %d", i)
 			os.Exit(1)
 		}
-		if islinezs {
+		if isNoteOneLine {
 			if toval != "\n" {
 				continue
 			}
-			islinezs = false
+			isNoteOneLine = false
 		}
-		if laststr == "//" {
-			islinezs = true
-			forstrEx = forstrEx[:len(forstrEx)-1]
+		if lastTwoChar == "//" {
+			isNoteOneLine = true
+			oneLineCode = oneLineCode[:len(oneLineCode)-1]
 			continue
 		}
-		if laststr == "/*" {
-			isnumlinezs = true
-			forstrEx = forstrEx[:len(forstrEx)-1]
+		if lastTwoChar == "/*" {
+			isNoteNumLine = true
+			oneLineCode = oneLineCode[:len(oneLineCode)-1]
 			continue
 		}
 		/*
 		 */
 		for {
-			issscont = false
-			if issssstr {
-				if laststr == "\\\"" {
-					fsssstr += toval
+			isLineJump = false
+			if isNumLine {
+				if lastTwoChar == "\\\"" {
+					NumLineVal += toval
 					break
 				}
 				if toval == "\n" {
-					if forstr[len(forstr)-3:len(forstr)-2] != "\\" {
-						fmt.Println("error: string line end not find \\")
+					if extendFileStr[len(extendFileStr)-3:len(extendFileStr)-2] != "\\" {
+						fmt.Printf("error: string line end[%s] not find \\", extendFileStr)
 						os.Exit(4)
 					}
-					forstrEx = forstrEx[0 : len(forstrEx)-2]
-					issscont = true
+					oneLineCode = oneLineCode[0 : len(oneLineCode)-2]
+					isLineJump = true
 					break
 				}
 				if toval == "\"" {
-					issssstr = false
-					//preissssstr = true
+					isNumLine = false
+					//preisNumLine = true
 					break
 				}
-				fsssstr += toval
+				NumLineVal += toval
 			}
 			if toval == "\"" {
-				issssstr = true
-				fsssstr = ""
+				isNumLine = true
+				NumLineVal = ""
 				break
 			}
 			break
 		}
-		if issscont {
+		if isLineJump {
 			continue
 		}
-		if issssstr {
-			forstrEx += toval
+		if isNumLine {
+			oneLineCode += toval
 			continue
 		}
-		// if preissssstr {
+		// if preisNumLine {
 		// 	replaceCount++
 		// 	repkey := replaceStr + fmt.Sprintf("%d", replaceCount)
-		// 	keyvalMap[repkey] = fsssstr
-		// 	forstrEx += repkey
+		// 	keyvalMap[repkey] = NumLineVal
+		// 	oneLineCode += repkey
 		// }
 		if toval == "\r" || toval == "\t" || toval == " " {
 			continue
 		}
 		if toval == "\n" || toval == ";" {
-			if len(forstrEx) > 0 {
-				//fmt.Println("=====1============", forstrEx)
-				filedataEx = append(filedataEx, forstrEx)
+			if len(oneLineCode) > 0 {
+				////fmt.Println("=====1============", oneLineCode)
+				fileLineList = append(fileLineList, oneLineCode)
 			}
-			forstrEx = ""
+			oneLineCode = ""
 		} else {
-			//fmt.Println("=====22============", forstrEx)
-			forstrEx += toval
+			////fmt.Println("=====22============", oneLineCode)
+			oneLineCode += toval
 		}
 	}
-	fmt.Printf(">>>>%#v\n", filedataEx)
-	paths, _ := filepath.Split(ffpath)
-	for index := 0; index < len(filedataEx); index++ {
-		tline := filedataEx[index]
-		cmd, tarval := lcheckOneline(tline)
-		if cmd == "include" {
-			tarval = filepath.Clean(tarval)
+	//fmt.Printf(">>>>%#v\n", fileLineList)
+	paths, _ := filepath.Split(inputFilePath)
+	// 解析每一行配置信息
+	for index := 0; index < len(fileLineList); index++ {
+		tline := fileLineList[index]
+		tcmd, tvalue := lcheckOneline(tline)
+		if tcmd == "include" { // 解析include嵌套包含配置文件
+			tvalue = filepath.Clean(tvalue)
 			if paths != "." && paths != "./" && paths != ".\\" {
-				tarval = paths + tarval
+				tvalue = paths + tvalue
 			}
-			fmt.Println("=====analysisConfig========", paths, tarval)
-			analysisConfig(tarval, keyvalMap)
+			//fmt.Println("=====analysisConfig========", paths, tvalue)
+			analysisConfig(tvalue, keyvalMap)
 			continue
 		}
-		keyvalMap[cmd] = tarval
+		keyvalMap[tcmd] = tvalue
 	}
-	fmt.Println("-------------------------------------", keyvalMap)
+	//fmt.Println("-------------------------------------", keyvalMap)
 }
 
-// LoadPathConfig outside call load path config
-func LoadPathConfig(ffpath string) map[string]string {
+// LoadPathConfig call load path config for Export
+func LoadPathConfig(inputFilePath string) map[string]string {
 	keyvalMap := map[string]string{}
-	analysisConfig(ffpath, keyvalMap)
+	analysisConfig(inputFilePath, keyvalMap)
 	retmap := map[string]string{}
 	for key, val := range keyvalMap {
 		tarval2 := lcheckValueReplace(keyvalMap, val)
