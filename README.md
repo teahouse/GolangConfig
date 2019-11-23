@@ -1,10 +1,11 @@
 # GolangConfig
 golang config
 
-golang读取配置，很多go配置都需要预定义结构体去读取，很不方便配置热更吧！
+golang读取配置，很多go配置都需要预定义结构体去读取，很不方便配置增\减\更新！
 所以这里把配置和代码分开，代码比较乱。
 ## 用法
-LoadPathConfig(filepath)
+LoadPathConfig(filepath)  
+# return map[string]string
 ## 测试配置
 // 单行注释
 /* 多行注释
