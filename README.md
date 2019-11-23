@@ -21,6 +21,9 @@ loglevel = "debug"					// 日志级别: debug/trace/info/warn/fatal
 daemon = logpath + "/skynet.pid"
 start = "app/main"					// 启动脚本
 
-start = "fabdd\
+//多行字符串，字符串只能用双引号，不能用单引号
+start = "fabdd\   
 dd\"fd+sf\
-哈哈"
+哈哈"  
+
+
