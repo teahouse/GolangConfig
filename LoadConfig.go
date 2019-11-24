@@ -65,8 +65,7 @@ func lcheckOneline(line string) (command string, targetval string) {
 func lgetValueFromMap(keyvalMap map[string]string, tokey string, targetval string) string {
 	val, ok := keyvalMap[tokey]
 	if !ok {
-		fmt.Printf("error: not find cmd=[%s] in [%s]\n", tokey, targetval)
-		os.Exit(3)
+		return ""
 	}
 	if val[0:1] == "\"" {
 		val = val[1 : len(val)-1]
@@ -134,7 +133,10 @@ func lcheckValueReplace(keyvalMap map[string]string, targetval string) string {
 		if val[0:1] == "\"" {
 			val = val[1 : len(val)-1]
 		} else if val != "true" && val != "false" {
-			val = lgetValueFromMap(keyvalMap, val, targetval)
+			toval := lgetValueFromMap(keyvalMap, val, targetval)
+			if len(toval)>0 {
+				val = toval
+			}
 		}
 		////fmt.Println("========2222222222222==22==", val)
 		realvalstr += val
